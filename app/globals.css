@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+
+  /* The single source for device insets. On a real handset these resolve to
+     the actual safe areas; in a desktop browser they fall back to 0. Routing
+     every consumer through a variable rather than calling env() directly is
+     what lets the /preview harness simulate a notched phone, since env() is
+     always 0 inside an iframe no matter what the frame draws around it. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #0b0f12;
+  color: #ece6d8;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Glass has nothing to refract over a flat fill, so three slow washes sit
+   behind every page and give the blur something to pick up. Fixed, so it
+   stays put while content scrolls over it. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 55% at 12% 4%, rgba(201, 162, 77, 0.1), transparent 60%),
+    radial-gradient(60% 50% at 92% 22%, rgba(46, 107, 107, 0.09), transparent 62%),
+    radial-gradient(90% 60% at 50% 108%, rgba(201, 162, 77, 0.05), transparent 70%);
+}
+
+@layer components {
+  .glass {
+    background-color: rgba(255, 255, 255, 0.05);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+      0 12px 40px -12px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Where backdrop-filter is unavailable the panel would read as nearly
+     transparent, so fall back to the opaque raised surface instead. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      background-color: #182125;
+    }
+  }
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid #c9a24d;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* The composer's textarea scrolls once it passes its max height. A permanently
+   visible scrollbar inside a rounded glass panel reads as a seam, so the thumb
+   only appears on hover; touch devices get the platform's overlay instead. */
+.prompt-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.prompt-scroll:hover {
+  scrollbar-color: rgba(236, 230, 216, 0.25) transparent;
+}
+
+.prompt-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  background: transparent;
+}
+
+.prompt-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prompt-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.prompt-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(236, 230, 216, 0.25);
+}
