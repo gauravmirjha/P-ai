@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import { verifySessionToken } from './lib/session.mjs';
 
 // A lightweight gate so this isn't a wide-open URL on the public internet —
 // not bank-grade security, just enough to keep it private to you. Treat it
 // as a doorlock, not a vault: don't put real account numbers or passwords
 // inside expense notes.
-export function middleware(req) {
+export async function middleware(req) {
   const { pathname } = req.nextUrl;
 
   if (
@@ -15,8 +16,10 @@ export function middleware(req) {
     return NextResponse.next();
   }
 
-  const auth = req.cookies.get('personal_os_auth')?.value;
-  if (process.env.APP_PASSWORD && auth === process.env.APP_PASSWORD) {
+  // The cookie is a signed token rather than the password, so an unset
+  // APP_PASSWORD fails closed: nothing verifies and everything redirects.
+  const token = req.cookies.get('personal_os_auth')?.value;
+  if (await verifySessionToken({ token, secret: process.env.APP_PASSWORD })) {
     return NextResponse.next();
   }
 
