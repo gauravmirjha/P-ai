@@ -86,10 +86,12 @@ URL directly.
 - **Content ideas** (`/ideas`): a Vercel Cron job hits `/api/cron/generate-ideas`
   every morning, asks a free model for 5 short-form hooks (weighted toward
   Reels/Shorts, with a couple adaptable to X/LinkedIn), and stores them.
-- **The password gate** (`middleware.js`) is a basic deterrent, not real
-  security — the cookie is a plain string comparison. That's a fine trade-off
-  for personal notes and rough expense amounts. Don't put real account
-  numbers, card numbers, or passwords into expense notes or board questions.
+- **The password gate** (`proxy.js`) is a basic deterrent, not real
+  security — one shared password guards the whole app. The cookie holds a
+  signed, expiring token rather than the password itself, but it is still a
+  doorlock, not a vault. That's a fine trade-off for personal notes and
+  rough expense amounts. Don't put real account numbers, card numbers, or
+  passwords into expense notes or board questions.
 - **No bank sync.** Real bank-transaction import (Plaid etc.) isn't free, so
   this is manual entry only. If you outgrow that later, that's the piece to
   add.

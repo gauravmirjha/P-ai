@@ -7,6 +7,8 @@ const STATUS = ['made', 'skipped'];
 const OUTCOME = ['good', 'flop'];
 
 export async function PATCH(req, { params }) {
+  // Next 15 made route params async; awaiting is required before reading them.
+  const { id } = await params;
   const body = await req.json();
   const patch = {};
 
@@ -34,7 +36,7 @@ export async function PATCH(req, { params }) {
   const { data, error } = await db
     .from('content_ideas')
     .update(patch)
-    .eq('id', params.id)
+    .eq('id', id)
     .select()
     .single();
 

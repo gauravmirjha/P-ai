@@ -6,7 +6,12 @@ import { isPublicPath, fallbackFor } from './lib/gate.mjs';
 // not bank-grade security, just enough to keep it private to you. Treat it
 // as a doorlock, not a vault: don't put real account numbers or passwords
 // inside expense notes.
-export async function middleware(req) {
+//
+// This was middleware.js until Next 16, which renamed the convention to
+// "proxy". The rename is not cosmetic here: middleware ran on the Edge
+// runtime, proxy defaults to Node.js, and the Edge build was what failed to
+// initialise in production with MIDDLEWARE_INVOCATION_FAILED.
+export async function proxy(req) {
   const { pathname } = req.nextUrl;
 
   try {
@@ -21,11 +26,10 @@ export async function middleware(req) {
 
     return NextResponse.redirect(new URL('/login', req.url));
   } catch (err) {
-    // Anything thrown here surfaces as MIDDLEWARE_INVOCATION_FAILED, which is
-    // a 500 on every route at once — the gate failing takes down the whole
-    // site. Log the cause so it is visible in the platform's runtime logs,
-    // then degrade to "not logged in" rather than to a crash.
-    console.error(`[middleware] gate failed for ${pathname}:`, err?.stack || err);
+    // Anything thrown here takes down every route at once rather than one
+    // page. Log the cause so it is visible in the platform's runtime logs,
+    // then degrade to "not logged in" instead of to a crash.
+    console.error(`[proxy] gate failed for ${pathname}:`, err?.stack || err);
 
     try {
       if (fallbackFor(pathname) === 'allow') return NextResponse.next();
